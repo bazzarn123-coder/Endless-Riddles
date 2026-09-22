@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Riddles - Endless Mobile Game</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Mobile Safe Area Adjustments */
+        body {
+            padding-bottom: env(safe-area-inset-bottom, 20px);
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        .safe-bottom-nav {
+            padding-bottom: calc(env(safe-area-inset-bottom, 16px) + 0.5rem);
+        }
+        /* Custom Scrollbar for sleek look */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col select-none">
+
+    <!-- Top Header -->
+    <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 px-4 py-3 sticky top-0 z-30 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+            <span class="text-2xl">♾️</span>
+            <h1 class="text-xl font-black tracking-wider bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">ENDLESS RIDDLES</h1>
+        </div>
+        <div class="flex items-center space-x-3 bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-700/60 text-xs font-semibold">
+            <div class="flex items-center space-x-1">
+                <span>🔥</span>
+                <span id="streakCount" class="text-amber-400 font-bold">0</span>
+            </div>
+            <div class="w-px h-3 bg-slate-600"></div>
+            <div class="flex items-center space-x-1">
+                <span>⭐</span>
+                <span id="scoreCount" class="text-purple-400 font-bold">0</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-md w-full mx-auto px-4 py-5 pb-28 overflow-y-auto" id="mainContainer">
+        
+        <!-- TAB 1: PLAY / ENDLESS MODE -->
+        <section id="tabPlay" class="space-y-5 animate-fade">
+            <div class="text-center space-y-1">
+                <p class="text-xs font-medium text-purple-400 uppercase tracking-widest">Infinite Challenge Mode</p>
+                <h2 class="text-lg font-bold text-slate-200">Endless Mind Benders</h2>
+            </div>
+
+            <!-- Riddle Card -->
+            <div class="bg-gradient-to-br from-slate-900 to-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                
+                <div class="flex justify-between items-center mb-4 text-xs text-slate-400 font-medium">
+                    <span id="playRiddleCategory" class="bg-purple-500/20 text-purple-300 px-2.5 py-1 rounded-md uppercase tracking-wider text-[10px]">Endless Pool</span>
+                    <span id="playRiddleNumber">Riddle #1</span>
+                </div>
+
+                <p id="playRiddleText" class="text-lg font-medium text-slate-100 min-h-[80px] flex items-center justify-center text-center leading-relaxed">
+                    Loading riddle...
+                </p>
+
+                <!-- User Answer Input Section -->
+                <div class="mt-4 space-y-3">
+                    <div class="flex space-x-2">
+                        <input type="text" id="userAnswerInput" placeholder="Type your answer here..." onkeydown="handleKeyPress(event)" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-purple-500 transition">
+                        <button onclick="checkUserAnswer()" class="bg-purple-600 hover:bg-purple-500 active:scale-95 text-white px-5 rounded-xl text-sm font-bold shadow-lg shadow-purple-900/30 transition">Submit</button>
+                    </div>
+                    <div id="feedbackMessage" class="text-center text-sm font-semibold hidden"></div>
+                </div>
+
+                <!-- Answer Section (Revealed) -->
+                <div id="answerSection" class="mt-4 pt-4 border-t border-slate-800/80 hidden">
+                    <div class="bg-slate-950/60 rounded-xl p-3.5 border border-purple-500/30 text-center animate-fade">
+                        <p class="text-xs text-purple-400 font-semibold uppercase mb-1">Answer:</p>
+                        <p id="playRiddleAnswer" class="text-base font-bold text-emerald-400"></p>
+                    </div>
+                </div>
+
+                <div class="mt-5 flex space-x-3">
+                    <button id="revealBtn" onclick="revealAnswer()" class="flex-1 bg-slate-800 hover:bg-slate-700 active:scale-95 transition text-slate-200 font-semibold py-3 rounded-xl text-sm border border-slate-700/60 shadow-md">
+                        Reveal Answer
+                    </button>
+                    <button onclick="nextEndlessRiddle()" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 active:scale-95 transition text-white font-semibold py-3 rounded-xl text-sm shadow-lg shadow-purple-900/30">
+                        Next Riddle ➔
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Action Cards -->
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="switchTab('browse')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 p-4 rounded-xl text-left transition active:scale-95 group">
+                    <div class="text-xl mb-1 group-hover:scale-110 transition-transform">📚</div>
+                    <div class="font-bold text-sm text-slate-200">Solved Archive</div>
+                    <div class="text-xs text-slate-400">View history</div>
+                </button>
+                <button onclick="nextEndlessRiddle()" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 p-4 rounded-xl text-left transition active:scale-95 group">
+                    <div class="text-xl mb-1 group-hover:scale-110 transition-transform">♾️</div>
+                    <div class="font-bold text-sm text-slate-200">Generate New</div>
+                    <div class="text-xs text-slate-400">Endless stream</div>
+                </button>
+            </div>
+        </section>
+
+        <!-- TAB 2: BROWSE / ARCHIVE -->
+        <section id="tabBrowse" class="space-y-4 hidden animate-fade">
+            <div class="space-y-2">
+                <h2 class="text-lg font-bold text-slate-200">Solved Archive</h2>
+                <!-- Search & Filter -->
+                <div class="relative">
+                    <input type="text" id="searchInput" oninput="filterArchive()" placeholder="Search solved riddles..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 pl-10 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-purple-500 transition">
+                    <span class="absolute left-3.5 top-3.5 text-slate-500">🔍</span>
+                </div>
+            </div>
+
+            <!-- List Container -->
+            <div id="riddlesListContainer" class="space-y-3 max-h-[62vh] overflow-y-auto pr-1">
+                <!-- Dynamically populated via JS -->
+            </div>
+        </section>
+
+        <!-- TAB 3: STATS & INFO -->
+        <section id="tabStats" class="space-y-5 hidden animate-fade">
+            <div class="text-center space-y-1">
+                <h2 class="text-lg font-bold text-slate-200">Your Endless Progress</h2>
+                <p class="text-xs text-slate-400">The riddle stream never stops!</p>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+                <div class="flex justify-between items-center bg-slate-950/50 p-3.5 rounded-xl border border-slate-800/80">
+                    <span class="text-sm text-slate-300">Total Solved</span>
+                    <span id="statSolved" class="text-lg font-black text-purple-400">0</span>
+                </div>
+                <div class="flex justify-between items-center bg-slate-950/50 p-3.5 rounded-xl border border-slate-800/80">
+                    <span class="text-sm text-slate-300">Current Streak</span>
+                    <span id="statStreak" class="text-lg font-black text-amber-400">0</span>
+                </div>
+                <div class="flex justify-between items-center bg-slate-950/50 p-3.5 rounded-xl border border-slate-800/80">
+                    <span class="text-sm text-slate-300">Total Score</span>
+                    <span id="statScore" class="text-lg font-black text-emerald-400">0</span>
+                </div>
+            </div>
+
+            <button onclick="resetProgress()" class="w-full bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-semibold py-3 rounded-xl text-sm transition active:scale-95">
+                Reset Progress
+            </button>
+        </section>
+
+    </main>
+
+    <!-- Bottom Navigation Bar (Safe Area Protected) -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 z-40 safe-bottom-nav">
+        <div class="max-w-md mx-auto px-6 py-2 flex justify-around items-center">
+            <button onclick="switchTab('play')" id="navPlay" class="flex flex-col items-center space-y-1 text-purple-400 transition">
+                <span class="text-xl">🎮</span>
+                <span class="text-[10px] font-bold tracking-wider">Play</span>
+            </button>
+            <button onclick="switchTab('browse')" id="navBrowse" class="flex flex-col items-center space-y-1 text-slate-400 hover:text-slate-200 transition">
+                <span class="text-xl">📚</span>
+                <span class="text-[10px] font-bold tracking-wider">Archive</span>
+            </button>
+            <button onclick="switchTab('stats')" id="navStats" class="flex flex-col items-center space-y-1 text-slate-400 hover:text-slate-200 transition">
+                <span class="text-xl">🏆</span>
+                <span class="text-[10px] font-bold tracking-wider">Stats</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- JavaScript Logic & Endless Riddle Engine -->
+    <script>
+        // Base Master Pool (Expanded Classic Riddles + Procedural Seed Data)
+        const baseRiddles = [
+            { id: 1, q: "I speak without a mouth and hear without ears. I have no body, but I come alive with wind.", a: "An echo" },
+            { id: 2, q: "I have keys but no locks. I have space but no room. You can enter, but can't go outside. What am I?", a: "A keyboard" },
+            { id: 3, q: "What has to be broken before you can use it?", a: "An egg" },
+            { id: 4, q: "I'm tall when I'm young, and I'm short when I'm old. What am I?", a: "A candle" },
+            { id: 5, q: "What month of the year has 28 days?", a: "All of them" },
+            { id: 6, q: "What is full of holes but still holds water?", a: "A sponge" },
+            { id: 7, q: "What question can you never answer yes to?", a: "Are you asleep yet?" },
+            { id: 8, q: "What is always in front of you but can't be seen?", a: "The future" },
+            { id: 9, q: "There's a one-story house where everything is yellow. What color are the stairs?", a: "There are no stairs" },
+            { id: 10, q: "What goes up and down but never moves?", a: "Stairs" },
+            { id: 11, q: "What has one eye, but can't see?", a: "A needle" },
+            { id: 12, q: "What has hands, but cannot clap?", a: "A clock" },
+            { id: 13, q: "What has a head and a tail, but no body?", a: "A coin" },
+            { id: 14, q: "What can you catch, but not throw?", a: "A cold" },
+            { id: 15, q: "What gets wetter and wetter the more it dries?", a: "A towel" },
+            { id: 16, q: "Your fingers point at it, your hair lies upon it, your foot steps over it, and your head rests upon it. What is it?", a: "A pillow" },
+            { id: 17, q: "What has legs, but doesn't walk?", a: "A table" },
+            { id: 18, q: "What kind of coat is best put on wet?", a: "A coat of paint" },
+            { id: 19, q: "What is black when it's clean and white when it's dirty?", a: "A chalkboard" },
+            { id: 20, q: "What can travel all around the world without leaving its corner?", a: "A stamp" }
+        ];
+
+        // Endless procedural generator building blocks
+        const generatorPool = [
+            { obj: "A bottle", feature: "a neck", missing: "a head" },
+            { obj: "A clock", feature: "hands", missing: "arms" },
+            { obj: "A book", feature: "a spine", missing: "bones" },
+            { obj: "A needle", feature: "an eye", missing: "a face" },
+            { obj: "A mountain", feature: "a foot", missing: "shoes" },
+            { obj: "A river", feature: "a bed", missing: "sheets" },
+            { obj: "A shoe", feature: "a tongue", missing: "teeth" },
+            { obj: "A tree", feature: "roots", missing: "legs" },
+            { obj: "A car", feature: "horns", missing: "sound" },
+            { obj: "A guitar", feature: "a neck", missing: "shoulders" },
+            { obj: "A comb", feature: "teeth", missing: "a mouth" },
+            { obj: "A hammer", feature: "a head", missing: "hair" },
+            { obj: "A window", feature: "a frame", missing: "a picture" },
+            { obj: "A piano", feature: "keys", missing: "locks" },
+            { obj: "A potato", feature: "eyes", missing: "vision" },
+            { obj: "A ladder", feature: "steps", missing: "feet" },
+            { obj: "A door", feature: "a handle", missing: "hands" },
+            { obj: "A pen", feature: "a point", missing: "an edge" },
+            { obj: "A ring", feature: "round shape", missing: "ends" },
+            { obj: "A shadow", feature: "movement", missing: "a body" }
+        ];
+
+        // Game State
+        let score = parseInt(localStorage.getItem('riddles_score') || '0');
+        let streak = parseInt(localStorage.getItem('riddles_streak') || '0');
+        let solvedArchive = JSON.parse(localStorage.getItem('riddles_archive') || '[]');
+        
+        let currentRiddle = null;
+        let globalRiddleCounter = parseInt(localStorage.getItem('riddles_counter') || '1');
+
+        // Initialize App
+        window.onload = function() {
+            updateStatsUI();
+            loadNextRiddle();
+            populateArchiveList();
+        };
+
+        // Tab Navigation
+        function switchTab(tabName) {
+            document.getElementById('tabPlay').classList.add('hidden');
+            document.getElementById('tabBrowse').classList.add('hidden');
+            document.getElementById('tabStats').classList.add('hidden');
+
+            document.getElementById('navPlay').className = "flex flex-col items-center space-y-1 text-slate-400 hover:text-slate-200 transition";
+            document.getElementById('navBrowse').className = "flex flex-col items-center space-y-1 text-slate-400 hover:text-slate-200 transition";
+            document.getElementById('navStats').className = "flex flex-col items-center space-y-1 text-slate-400 hover:text-slate-200 transition";
+
+            if (tabName === 'play') {
+                document.getElementById('tabPlay').classList.remove('hidden');
+                document.getElementById('navPlay').className = "flex flex-col items-center space-y-1 text-purple-400 transition";
+            } else if (tabName === 'browse') {
+                document.getElementById('tabBrowse').classList.remove('hidden');
+                document.getElementById('navBrowse').className = "flex flex-col items-center space-y-1 text-purple-400 transition";
+                populateArchiveList();
+            } else if (tabName === 'stats') {
+                document.getElementById('tabStats').classList.remove('hidden');
+                document.getElementById('navStats').className = "flex flex-col items-center space-y-1 text-purple-400 transition";
+                updateStatsUI();
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Endless Riddle Engine Logic
+        function generateEndlessRiddle(idNum) {
+            // Pick from base riddles first if available in sequence, then infinite generator
+            if (idNum <= baseRiddles.length) {
+                return baseRiddles[idNum - 1];
+            }
+
+            // Procedural infinite generation
+            const randItem = generatorPool[Math.floor(Math.random() * generatorPool.length)];
+            const variations = [
+                `What has ${randItem.feature}, but has no ${randItem.missing}?`,
+                `Tell me, what has ${randItem.feature} yet completely lacks ${randItem.missing}?`,
+                `You can find ${randItem.feature} on it, but it has no ${randItem.missing}. What is it?`
+            ];
+            const randQuestion = variations[Math.floor(Math.random() * variations.length)];
+
+            return {
+                id: idNum,
+                q: randQuestion,
+                a: randItem.obj
+            };
+        }
+
+        function loadNextRiddle() {
+            currentRiddle = generateEndlessRiddle(globalRiddleCounter);
+            
+            document.getElementById('playRiddleNumber').innerText = `Endless Riddle #${currentRiddle.id}`;
+            document.getElementById('playRiddleText').innerText = currentRiddle.q;
+            document.getElementById('playRiddleAnswer').innerText = currentRiddle.a;
+            
+            // Reset input and feedback
+            document.getElementById('userAnswerInput').value = '';
+            document.getElementById('feedbackMessage').classList.add('hidden');
+            document.getElementById('answerSection').classList.add('hidden');
+            document.getElementById('revealBtn').disabled = false;
+            document.getElementById('revealBtn').classList.remove('opacity-50');
+        }
+
+        function nextEndlessRiddle() {
+            globalRiddleCounter++;
+            localStorage.setItem('riddles_counter', globalRiddleCounter);
+            loadNextRiddle();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                checkUserAnswer();
+            }
+        }
+
+        function checkUserAnswer() {
+            const inputVal = document.getElementById('userAnswerInput').value.trim().toLowerCase();
+            const feedbackEl = document.getElementById('feedbackMessage');
+            
+            if (!inputVal) {
+                feedbackEl.innerText = "Please type an answer first!";
+                feedbackEl.className = "text-center text-sm font-semibold text-amber-400 animate-fade";
+                feedbackEl.classList.remove('hidden');
+                return;
+            }
+
+            const correctAnswer = currentRiddle.a.toLowerCase();
+
+            // Flexible matching check (ignores starting articles like 'a', 'an', 'the')
+            const cleanUser = inputVal.replace(/^(a |an |the )/, '');
+            const cleanAns = correctAnswer.replace(/^(a |an |the )/, '');
+
+            const isCorrect = cleanAns.includes(cleanUser) || cleanUser.includes(cleanAns) || inputVal === correctAnswer;
+
+            feedbackEl.classList.remove('hidden');
+            if (isCorrect) {
+                feedbackEl.innerText = "🎉 Correct! Awesome job!";
+                feedbackEl.className = "text-center text-sm font-bold text-emerald-400 animate-fade";
+                
+                document.getElementById('answerSection').classList.remove('hidden');
+                document.getElementById('revealBtn').disabled = true;
+                document.getElementById('revealBtn').classList.add('opacity-50');
+
+                // Save to archive if not already recorded
+                if (!solvedArchive.some(r => r.id === currentRiddle.id)) {
+                    solvedArchive.unshift({ ...currentRiddle, date: new Date().toLocaleDateString() });
+                    score += 10;
+                    streak += 1;
+                    saveData();
+                    updateStatsUI();
+                }
+            } else {
+                feedbackEl.innerText = "❌ Not quite right. Try again or tap Reveal!";
+                feedbackEl.className = "text-center text-sm font-bold text-red-400 animate-fade";
+            }
+        }
+
+        function revealAnswer() {
+            document.getElementById('answerSection').classList.remove('hidden');
+            document.getElementById('revealBtn').disabled = true;
+            document.getElementById('revealBtn').classList.add('opacity-50');
+            
+            const feedbackEl = document.getElementById('feedbackMessage');
+            feedbackEl.innerText = "💡 Answer revealed!";
+            feedbackEl.className = "text-center text-sm font-bold text-purple-400 animate-fade";
+            feedbackEl.classList.remove('hidden');
+
+            if (!solvedArchive.some(r => r.id === currentRiddle.id)) {
+                solvedArchive.unshift({ ...currentRiddle, date: new Date().toLocaleDateString() });
+                streak = 0; // Reset streak on reveal
+                saveData();
+                updateStatsUI();
+            }
+        }
+
+        // Archive / Browse Mode Functions
+        function populateArchiveList(filterText = '') {
+            const container = document.getElementById('riddlesListContainer');
+            container.innerHTML = '';
+
+            const filtered = solvedArchive.filter(r => 
+                r.q.toLowerCase().includes(filterText.toLowerCase()) || 
+                r.a.toLowerCase().includes(filterText.toLowerCase()) ||
+                r.id.toString() === filterText
+            );
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-slate-500 text-sm">No solved riddles in your archive yet. Play to fill this up!</div>`;
+                return;
+            }
+
+            filtered.forEach(r => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2 transition hover:border-slate-700";
+                card.innerHTML = `
+                    <div class="flex justify-between items-center text-xs text-slate-400 font-semibold">
+                        <span class="text-purple-400">#${r.id}</span>
+                        <span class="text-emerald-400 font-bold">Solved</span>
+                    </div>
+                    <p class="text-sm font-medium text-slate-200">${r.q}</p>
+                    <div id="archive-ans-${r.id}" class="hidden pt-2 border-t border-slate-800 text-xs text-emerald-400 font-bold">
+                        Answer: ${r.a}
+                    </div>
+                    <button onclick="toggleArchiveAnswer(${r.id})" class="text-[11px] text-purple-400 hover:underline pt-1 block">
+                        Toggle Answer
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function filterArchive() {
+            const query = document.getElementById('searchInput').value;
+            populateArchiveList(query);
+        }
+
+        function toggleArchiveAnswer(id) {
+            const ansDiv = document.getElementById(`archive-ans-${id}`);
+            ansDiv.classList.toggle('hidden');
+        }
+
+        // Stats & Persistence
+        function updateStatsUI() {
+            document.getElementById('streakCount').innerText = streak;
+            document.getElementById('scoreCount').innerText = score;
+            document.getElementById('statSolved').innerText = solvedArchive.length;
+            document.getElementById('statStreak').innerText = streak;
+            document.getElementById('statScore').innerText = score;
+        }
+
+        function saveData() {
+            localStorage.setItem('riddles_score', score);
+            localStorage.setItem('riddles_streak', streak);
+            localStorage.setItem('riddles_archive', JSON.stringify(solvedArchive));
+            localStorage.setItem('riddles_counter', globalRiddleCounter);
+        }
+
+        function resetProgress() {
+            if (confirm("Are you sure you want to reset your score and solved archive?")) {
+                score = 0;
+                streak = 0;
+                solvedArchive = [];
+                globalRiddleCounter = 1;
+                saveData();
+                updateStatsUI();
+                loadNextRiddle();
+                populateArchiveList();
+                alert("Progress reset successfully!");
+            }
+        }
+    </script>
+</body>
+</html>
